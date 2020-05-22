@@ -1,37 +1,42 @@
 ---
-apiVersion: apps/v1
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  labels:
-    app: web
-  name: mynginx
+  name: nginx-demo
 spec:
-  replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
-      app: web
-  template:
+      app: nginx
+  replicas: 1 # tells deployment to run 1 pods matching the template
+  template: # create pods using pod definition in this template
     metadata:
       labels:
-        app: web
+        app: nginx
     spec:
       containers:
-      - image: nginx
-        name: mynginx
-
+      - name: nginx-demo
+        image: nginx
+        ports:
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  name: nginx-demo
+  namespace: default
   labels:
-    app: web
-  name: mynginx
+    app: nginx
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 spec:
+  externalTrafficPolicy: Local
   ports:
-  - nodePort: 32223
+  - name: http
     port: 80
     protocol: TCP
     targetPort: 80
   selector:
-    app: web
-  type: NodePort
+    app: nginx
+  type: LoadBalancer
