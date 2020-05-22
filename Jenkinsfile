@@ -10,14 +10,17 @@ pipeline {
       }
     }
 
-    stage('Deploy App') {
-      steps {
-        script {
-          kubernetesDeploy(configs: "nginx.yaml", kubeconfigId: "mykubeconfig")
-        }
-      }
-    }
-
-  }
+   
+   stage('Deploy Application on K8s') {
+		steps {
+			withKubeConfig([credentialsId: 'Kubernetes_Configuration_File',
+			serverUrl: 'https://ED1BE355533A7CF9674C747B71B48E40.sk1.us-east-2.eks.amazonaws.com',
+			clusterName: 'aps-cmseks-east2']){
+				sh("kubectl apply -f nginx.yaml")
+			}     
+		}
+     }
+  
+}
 
 }
